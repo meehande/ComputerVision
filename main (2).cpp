@@ -3,11 +3,14 @@
  * by Kenneth Dawson-Howe � Wiley & Sons Inc. 2014.  All rights reserved.
  */
 //#include "Utilities.h"
-#include "ColourHistogram.h"
+//#include "ColourHistogram.h"
+#include "SampleImage.h"
 #include <iostream>
 #include <fstream>
 using namespace std;
  
+
+
 
 #define SCENE_IMAGES_INDEX  0
 #define PAGE_IMAGES_INDEX  50
@@ -39,7 +42,7 @@ int main(int argc, const char** argv)
 		"BookView22.jpg",
 		"BookView23.jpg",
 		"BookView24.jpg",
-		"BookView25.jpg",
+		"BookView25.jpg"/*,
 		"BookView26.jpg",
 		"BookView27.jpg",
 		"BookView28.jpg",
@@ -64,7 +67,7 @@ int main(int argc, const char** argv)
 		"BookView47.jpg",
 		"BookView48.jpg",
 		"BookView49.jpg",
-		"BookView50.jpg"
+		"BookView50.jpg"*/
     };
 	char* page_files[] = {
 		"Page01.jpg",
@@ -81,19 +84,20 @@ int main(int argc, const char** argv)
 		"Page12.jpg",
 		"Page13.jpg"
 	};
-	char* back_project_sample_file = "blue1.png";
+	char* back_project_sample_file = "BlueBookPixels.png";
 
 	// Load images to test 
 	int number_of_images = sizeof(image_files)/sizeof(image_files[0]);
-	Mat* image = new Mat[number_of_images];
+	//Mat* image = new Mat[number_of_images];
+	SampleImage* image = new SampleImage[number_of_images];
 	for (int file_no=0; (file_no < number_of_images); file_no++)
 	{
 		string filename(file_location);
 		filename.append(image_files[file_no]);
-		image[file_no] = imread(filename, -1);
-		if (image[file_no].empty())
+		image[file_no].original_image = &imread(filename, -1);
+		if (image[file_no].original_image->empty())
 		{
-			cout << "Could not open " << image[file_no] << endl;
+			cout << "Could not open " << image[file_no].original_image << endl;
 			return -1;
 		}
 	}
@@ -128,26 +132,31 @@ int main(int argc, const char** argv)
 	Mat* back_projection_probabilities_display = new Mat[number_of_images]; //black&white array of back projected blue results
 	//imshow("blue", blue_sample);
 	Mat hls_image;
-	for(int i = 0; i < number_of_images ; i ++){
-		Mat image_backproject = image[SCENE_IMAGES_INDEX + i];
-		//imshow("first image", image_backproject);
+	Mat back_projection_probabilities; 
+	for(int i = 0; i < 1 ; i ++){
+		Mat image_backproject = *image[i].original_image;
+		imshow("first image", image_backproject);
 		cvtColor(blue_sample, hls_image, CV_BGR2HLS); //convert blue sample to hls and store in hls
 		//imshow("hls image 1", hls_image);
 		ColourHistogram histogram3D(hls_image,8);
 		histogram3D.NormaliseHistogram();
 		cvtColor(image_backproject, hls_image, CV_BGR2HLS);
 		//imshow("hls image 2", hls_image);
-		Mat back_projection_probabilities = histogram3D.BackProject(hls_image);
-		//imshow("back p 1", back_projection_probabilities);
-		back_projection_probabilities = StretchImage( back_projection_probabilities );		
-		cvtColor(back_projection_probabilities, back_projection_probabilities_display[i], CV_GRAY2BGR);
-		//imshow(to_string(i), back_projection_probabilities_display[i]);
-		//imshow("image_backproject", image_backproject);
-		Mat output1 = JoinImagesHorizontally(image_backproject,"Original Image",blue_sample,"Blue Samples",4);
-		Mat output2 = JoinImagesHorizontally(output1,"",back_projection_probabilities_display[i],"Blue Back Projection",4);
-		//imshow( "Back Projection", output2 );
+
+		back_projection_probabilities = histogram3D.BackProject(hls_image);
+		*image[i].back_project_image = histogram3D.BackProject(hls_image);
+
+		imshow("back p 1", back_projection_probabilities);
+		imshow("back p 2", *image[i].back_project_image);
+		
+		//back_projection_probabilities = StretchImage( back_projection_probabilities );		
+		*image[i].back_project_image_display = StretchImage(back_projection_probabilities);
+
+		cvtColor(back_projection_probabilities, *image[i].back_project_image_display, CV_GRAY2BGR);
+		
+		imshow(to_string(i), *image[i].back_project_image_display);
 	}
-	imshow(image_files[number_of_images-1], image[number_of_images-1]);
+	//imshow(image_files[number_of_images-1], image[number_of_images-1]);
 
 //FINDING CORNER POINTS FOR GEOMETRIC TRANSFORMATION
 	Point2f x0y0(1024, 1024); //top left
@@ -189,9 +198,10 @@ int main(int argc, const char** argv)
 	}
 
 //PERSPECTIVE GEOMETRIC TRANSFORMATION
+	/*
 	// Perspective Lambda Matrix
     Mat perspective_matrix( 2, 4, CV_32FC1 );
-	Mat image_backproject = image[i];
+	Mat image_backproject = *image[i].original_image;
 	perspective_matrix = Mat::zeros( image_backproject.rows, image_backproject.cols, image_backproject.type() );
 	Point2f destination_points[4];
 	destination_points[0] = Point2f( 0,0 );
@@ -213,7 +223,7 @@ int main(int argc, const char** argv)
 	cout << "x0y0" << x0y0 << endl;
 	cout << "x1y1" << x1y1 << endl;
 	cout << "x2y2" << x2y2 << endl;
-	cout << "x3y3" << x3y3 << endl;
+	cout << "x3y3" << x3y3 << endl;*/
 
 	
 	

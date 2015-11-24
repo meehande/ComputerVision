@@ -24,18 +24,18 @@
     <ClInclude Include="ColourHistogram.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SampleImage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main (2).cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Features.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="Utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Geometric.cpp">
+    <ClCompile Include="SampleImage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main (1).cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,3 +1,4 @@
+#pragma once
 /*
  * This code is provided as part of "A Practical Introduction to Computer Vision with OpenCV"
  * by Kenneth Dawson-Howe © Wiley & Sons Inc. 2014.  All rights reserved.
@@ -19,12 +20,12 @@ void writeText( Mat image, char* text, int row, int column, Scalar colour=-1.0, 
 Mat JoinImagesHorizontally( Mat& image1, char* name1, Mat& image2, char* name2, int spacing=0, Scalar colour=-1.0 );
 Mat JoinImagesVertically( Mat& image1, char* name1, Mat& image2, char* name2, int spacing=0, Scalar colour=-1.0 );
 void addGaussianNoise(Mat &image, double average=0.0, double standard_deviation=10.0);
-
+/*
 VideoWriter* OpenVideoFile( char* filename, VideoCapture& video_to_emulate, int horizontal_multiple=1, int vertical_multiple=1, int spacing=0 );
 VideoWriter* OpenVideoFile( char* filename, int codec, Size image_size, double fps, int horizontal_multiple=1, int vertical_multiple=1, int spacing=0 );
 void WriteVideoFrame( VideoWriter* output_video, Mat& video_frame );
 void CloseVideoFile( VideoWriter* video );
-
+*/
 void invertImage(Mat &image, Mat &result_image);
 void ImagesDemos( Mat& image1, Mat& image2, Mat& logo_image, Mat& people_image );
 void HistogramsDemos( Mat& dark_image, Mat& fruit_image, Mat& people_image, Mat& skin_image, Mat all_images[], int number_of_images );

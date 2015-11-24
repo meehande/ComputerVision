@@ -2,16 +2,16 @@
  * This code is provided as part of "A Practical Introduction to Computer Vision with OpenCV"
  * by Kenneth Dawson-Howe © Wiley & Sons Inc. 2014.  All rights reserved.
  */
-#include "opencv2/core.hpp"
-#include "opencv2/imgproc.hpp"
-#include "opencv2/video.hpp"
-#include "opencv2/highgui.hpp"
-#include <stdio.h>
-#include <iostream>
+//#include "opencv2/core.hpp"
+//#include "opencv2/imgproc.hpp"
+//#include "opencv2/video.hpp"
+//#include "opencv2/highgui.hpp"
+//#include <stdio.h>
+//#include <iostream>
 #include "Utilities.h"
 
-using namespace std;
-using namespace cv;
+//using namespace std;
+//using namespace cv;
 
 void writeText( Mat image, char* text, int row, int column, Scalar passed_colour, double scale, int thickness )
 {

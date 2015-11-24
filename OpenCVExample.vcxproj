@@ -13,12 +13,12 @@
   <ItemGroup>
     <ClInclude Include="ColourHistogram.h" />
     <ClInclude Include="Histogram.h" />
+    <ClInclude Include="SampleImage.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Features.cpp" />
-    <ClCompile Include="Geometric.cpp" />
-    <ClCompile Include="main (2).cpp" />
+    <ClCompile Include="main (1).cpp" />
+    <ClCompile Include="SampleImage.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
