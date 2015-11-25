@@ -81,7 +81,7 @@ int main(int argc, const char** argv)
 		"Page12.jpg",
 		"Page13.jpg"
 	};
-	char* back_project_sample_file = "Blue1.png";
+	char* back_project_sample_file = "BlueBookPixels.png";
 
 	
 
@@ -161,46 +161,111 @@ int main(int argc, const char** argv)
 	
 	for(int i =0; i<number_of_images ; i++){
 		Mat test_image = *images[i].back_project_image_display;
-		for (int row=0; row < test_image.rows; row++){
-			for (int col = 320; col < test_image.cols; col++){//choose pixel
-				int current[3];
+		//top left
+		//for (int row=0; row < test_image.rows; row++){
+		//	for (int col = 320; col < test_image.cols; col++){//choose pixel
+				/*int current[3];
 				current[0] = test_image.at<Vec3b>(row,col)[0];
 				current[1] = test_image.at<Vec3b>(row,col)[1];
 				current[2] = test_image.at<Vec3b>(row,col)[2];
-				if(current[0] == 255 && current[1] == 255 && current[2] == 255){ //if white
-					if(row < images[i].page_corners[0].y )//&& col < images[i].page_corners[0].x) 
-					{ //top left: lowest row with lowest column
-					/*	x0y0.x = col;
-						x0y0.y = row;*/
+				if(current[0] == 255 && current[1] == 255 && current[2] == 255){
+*/
+
+		//			
+		//			if(row < images[i].page_corners[0].y )//&& col < images[i].page_corners[0].x) 
+		//			{ //top left: lowest row with lowest column
+		//			/*	x0y0.x = col;
+		//				x0y0.y = row;*/
+		//				images[i].page_corners[0].x = col;
+		//				images[i].page_corners[0].y = row;
+		//			}
+		//			if(col < images[i].page_corners[1].x)// && row > images[i].page_corners[1].y) 
+		//			{ //bottom left: highest row with lowest column
+		//				/*x1y1.x = col;
+		//				x1y1.y = row;*/
+		//				images[i].page_corners[1].x = col;
+		//				images[i].page_corners[1].y = row;
+		//			}
+		//			if(col > images[i].page_corners[2].x )//&& row > images[i].page_corners[2].y) 
+		//			{ //top right: lowest row with highest column
+		//				/*x2y2.x = col;
+		//				x2y2.y = row;*/
+		//				images[i].page_corners[2].x = col;
+		//				images[i].page_corners[2].y = row;
+		//			}
+		//			//TO DO: SECOND CONDITION FOR THIS!!
+		//			if(row > images[i].page_corners[3].y )//&& col > x3y3.x)
+		//			{ //bottom right: highest row with highest column
+		//		/*		x3y3.x = col;
+		//				x3y3.y = row;*/
+		//				images[i].page_corners[3].x = col;
+		//				images[i].page_corners[3].y = row;
+		//			}
+
+		//		}
+		//	}
+		//}
+		int current[3];
+	//top left
+		for (int row=0; row < test_image.rows; row++){
+			for (int col = 320; col < test_image.cols; col++){//choose pixel
+				if(images[i].page_corners[0].x == 0 && images[i].page_corners[0].y ==0) {
+					current[0] = test_image.at<Vec3b>(row,col)[0];
+					current[1] = test_image.at<Vec3b>(row,col)[1];
+					current[2] = test_image.at<Vec3b>(row,col)[2];
+					if(current[0] == 255 && current[1] == 255 && current[2] == 255){ //if white					
 						images[i].page_corners[0].x = col;
 						images[i].page_corners[0].y = row;
 					}
-					if(col < images[i].page_corners[1].x)// && row > images[i].page_corners[1].y) 
-					{ //bottom left: highest row with lowest column
-						/*x1y1.x = col;
-						x1y1.y = row;*/
+				}
+			}
+		}
+			//top right
+		for (int col = test_image.cols-1; col > 0; col--){
+			for (int row=0; row < test_image.rows; row++){
+			//choose pixel
+				if(images[i].page_corners[1].x == 0 && images[i].page_corners[1].y ==0) {
+					current[0] = test_image.at<Vec3b>(row,col)[0];
+					current[1] = test_image.at<Vec3b>(row,col)[1];
+					current[2] = test_image.at<Vec3b>(row,col)[2];
+					if(current[0] == 255 && current[1] == 255 && current[2] == 255){
 						images[i].page_corners[1].x = col;
 						images[i].page_corners[1].y = row;
 					}
-					if(col > images[i].page_corners[2].x )//&& row > images[i].page_corners[2].y) 
-					{ //top right: lowest row with highest column
-						/*x2y2.x = col;
-						x2y2.y = row;*/
+				}
+			}
+		}
+		//bottom right
+		for (int row=test_image.rows-1; row >0; row--){
+			for (int col = test_image.cols-1; col > 300; col--){//choose pixel
+				if(images[i].page_corners[2].x == 0 && images[i].page_corners[2].y ==0) {
+					current[0] = test_image.at<Vec3b>(row,col)[0];
+					current[1] = test_image.at<Vec3b>(row,col)[1];
+					current[2] = test_image.at<Vec3b>(row,col)[2];		
+					if(current[0] == 255 && current[1] == 255 && current[2] == 255){
 						images[i].page_corners[2].x = col;
 						images[i].page_corners[2].y = row;
 					}
-					//TO DO: SECOND CONDITION FOR THIS!!
-					if(row > images[i].page_corners[3].y )//&& col > x3y3.x)
-					{ //bottom right: highest row with highest column
-				/*		x3y3.x = col;
-						x3y3.y = row;*/
+				}
+			}
+		}
+		//bottom left
+		for (int col = 300; col < test_image.cols; col++){
+			for (int row=test_image.rows-1; row>0; row--){//choose pixel
+				if(images[i].page_corners[3].x == 0 && images[i].page_corners[3].y ==0) {
+					current[0] = test_image.at<Vec3b>(row,col)[0];
+					current[1] = test_image.at<Vec3b>(row,col)[1];
+					current[2] = test_image.at<Vec3b>(row,col)[2];
+					if(current[0] == 255 && current[1] == 255 && current[2] == 255){
 						images[i].page_corners[3].x = col;
 						images[i].page_corners[3].y = row;
 					}
 				}
 			}
 		}
-	}
+}
+
+
 
 //PERSPECTIVE GEOMETRIC TRANSFORMATION
 
@@ -219,7 +284,7 @@ int main(int argc, const char** argv)
 	
 		//Input and Output Image;
 		
-		Point2f source_points[] = {images[i].page_corners[0], images[i].page_corners[2], images[i].page_corners[3], images[i].page_corners[1]};
+		Point2f source_points[] = {images[i].page_corners[0], images[i].page_corners[1], images[i].page_corners[2], images[i].page_corners[3]};
 		// Get the Perspective Transform Matrix 
 		perspective_matrix = getPerspectiveTransform( source_points, destination_points);
 		// Apply the Perspective Transform just found to the src image
@@ -236,10 +301,18 @@ int main(int argc, const char** argv)
 		cout << "point 3" << images[i].page_corners[3] << endl << endl;
 	}
 
-	imshow("original", *images[22].original_image);
+	//imshow("original", *images[22].original_image);
 	//imshow("back project", *images[0].back_project_image);
-	imshow("back project display", *images[22].back_project_image_display);
-	imshow("perspective", *images[22].perspective_transform_image);
+	//imshow("22", *images[22].back_project_image_display);
+	//imshow("21", *images[21].back_project_image_display);
+	//imshow("19", *images[19].back_project_image_display);
+	//imshow("14", *images[14].back_project_image_display);
+	//imshow("11", *images[11].back_project_image_display);
+	//imshow("8", *images[8].back_project_image_display);
+	//imshow("7", *images[7].back_project_image_display);
+	//imshow("6", *images[6].back_project_image_display);
+	//imshow("5", *images[5].back_project_image_display);
+	//imshow("perspective", *images[22].perspective_transform_image);
 	//cout << "point 0" << images[15].page_corners[0] << endl;
 	//cout << "point 1" << images[15].page_corners[1] << endl;
 	//cout << "point 2" << images[15].page_corners[2] << endl;

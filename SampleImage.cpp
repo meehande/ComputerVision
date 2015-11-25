@@ -1,10 +1,10 @@
 #include "SampleImage.h"
 
 SampleImage::SampleImage(){
-	page_corners[0] = Point2f(1024,1024); //top left
-	page_corners[1] = Point2f(1024,1024); //bottom left
-	page_corners[2] = Point2f(0,1024); //top right
-	page_corners[3] = Point2f(1024,0); //bottomw right
+	page_corners[0] = Point2f(0,0); //top left
+	page_corners[1] = Point2f(0,0); //top right
+	page_corners[2] = Point2f(0,0); //bottom right
+	page_corners[3] = Point2f(0,0); //bottomw left
 
 }
 
