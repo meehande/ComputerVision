@@ -8,11 +8,21 @@
 #include <fstream>
 using namespace std;
  
+Mat back_projection(Mat* image, Mat sample_image);
+Point2f find_top_left(Mat test_image, Point2f initial_xy);
+Point2f find_top_right(Mat test_image, Point2f initial_xy);
+Point2f find_bottom_right(Mat test_image, Point2f initial_xy);
+Point2f find_bottom_left(Mat test_image, Point2f initial_xy);
 
 #define SCENE_IMAGES_INDEX  0
 #define PAGE_IMAGES_INDEX  50
 int main(int argc, const char** argv)
 {
+
+#pragma region INIT
+
+	int ground_truth_pageNums[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,2,3,5,4,7,9,8,7,11,13,12,2};
+
 	char* file_location = "Books/";
 	char* image_files[] = {
 		"BookView01.jpg",
@@ -40,31 +50,6 @@ int main(int argc, const char** argv)
 		"BookView23.jpg",
 		"BookView24.jpg",
 		"BookView25.jpg"
-	/*	"BookView26.jpg",
-		"BookView27.jpg",
-		"BookView28.jpg",
-		"BookView29.jpg",
-		"BookView30.jpg",
-		"BookView31.jpg",
-		"BookView32.jpg",
-		"BookView33.jpg",
-		"BookView34.jpg",
-		"BookView35.jpg",
-		"BookView36.jpg",
-		"BookView37.jpg",
-		"BookView38.jpg",
-		"BookView39.jpg",
-		"BookView40.jpg",
-		"BookView41.jpg",
-		"BookView42.jpg",
-		"BookView43.jpg",
-		"BookView44.jpg",
-		"BookView45.jpg",
-		"BookView46.jpg",
-		"BookView47.jpg",
-		"BookView48.jpg",
-		"BookView49.jpg",
-		"BookView50.jpg"*/
     };
 	char* page_files[] = {
 		"Page01.jpg",
@@ -96,6 +81,7 @@ int main(int argc, const char** argv)
 		filename.append(image_files[file_no]);
 		image[file_no] = imread(filename, -1);
 		images[file_no].original_image = &image[file_no];
+		images[file_no].ground_truth_pageNum = ground_truth_pageNums[file_no];
 		//imshow(to_string(file_no), *images[0].original_image);
 		if (image[file_no].empty())
 		{
@@ -132,78 +118,30 @@ int main(int argc, const char** argv)
 		return -1;
 	}
 
-	//BACK PROJECTION (TAKEN FROM HISTOGRAMSDEMO FUNCTION)
-	//Mat blue_sample = image[BLUE_SAMPLE_IMAGE_INDEX]; //sample of blue for back projection
-	Mat* back_projection_probabilities_display = new Mat[number_of_images]; //black&white array of back projected blue results
+#pragma endregion
 
-	Mat hls_image;
-	Mat image_backproject;
-	Mat back_projection_probabilities;
+	//BACK PROJECTION (TAKEN FROM HISTOGRAMSDEMO FUNCTION)
+	Mat* back_projection_probabilities_display = new Mat[number_of_images + number_of_pages + 1];
 	for(int i = 0; i < number_of_images ; i ++){
-		image_backproject = *images[i].original_image;
-		cvtColor(blue_sample, hls_image, CV_BGR2HLS); //convert blue sample to hls and store in hls
-		ColourHistogram histogram3D(hls_image,8);
-		histogram3D.NormaliseHistogram();
-		cvtColor(image_backproject, hls_image, CV_BGR2HLS);
-		back_projection_probabilities = histogram3D.BackProject(hls_image);
-		back_projection_probabilities = StretchImage(back_projection_probabilities);		
-		cvtColor(back_projection_probabilities, back_projection_probabilities_display[i], CV_GRAY2BGR);
+		back_projection_probabilities_display[i] = back_projection(images[i].original_image, blue_sample);
 		images[i].back_project_image_display = &back_projection_probabilities_display[i];
-		Mat output1 = JoinImagesHorizontally(image_backproject,"Original Image",blue_sample,"Blue Samples",4);
-		Mat output2 = JoinImagesHorizontally(output1,"",back_projection_probabilities_display[i],"Blue Back Projection",4);
 		//imshow(to_string(i), *images[i].back_project_image_display);
 	}
-	
+	for(int i = number_of_images; i < (number_of_images + number_of_pages); i++){
+		back_projection_probabilities_display[i] = back_projection(page_images[i-number_of_images].original_image, blue_sample);
+		page_images[i-number_of_images].back_project_image_display = &back_projection_probabilities_display[i];
+		//imshow(to_string(i), *page_images[i-number_of_images].back_project_image_display);
+	}
 	
 //FINDING CORNER POINTS FOR GEOMETRIC TRANSFORMATION
+#pragma region CORNER_POINTS
 	for(int i =0; i<number_of_images ; i++){
 		Mat test_image = *images[i].back_project_image_display;
-		//top left
-		//for (int row=0; row < test_image.rows; row++){
-		//	for (int col = 320; col < test_image.cols; col++){//choose pixel
-				/*int current[3];
-				current[0] = test_image.at<Vec3b>(row,col)[0];
-				current[1] = test_image.at<Vec3b>(row,col)[1];
-				current[2] = test_image.at<Vec3b>(row,col)[2];
-				if(current[0] == 255 && current[1] == 255 && current[2] == 255){
-*/
-
-		//			
-		//			if(row < images[i].page_corners[0].y )//&& col < images[i].page_corners[0].x) 
-		//			{ //top left: lowest row with lowest column
-		//			/*	x0y0.x = col;
-		//				x0y0.y = row;*/
-		//				images[i].page_corners[0].x = col;
-		//				images[i].page_corners[0].y = row;
-		//			}
-		//			if(col < images[i].page_corners[1].x)// && row > images[i].page_corners[1].y) 
-		//			{ //bottom left: highest row with lowest column
-		//				/*x1y1.x = col;
-		//				x1y1.y = row;*/
-		//				images[i].page_corners[1].x = col;
-		//				images[i].page_corners[1].y = row;
-		//			}
-		//			if(col > images[i].page_corners[2].x )//&& row > images[i].page_corners[2].y) 
-		//			{ //top right: lowest row with highest column
-		//				/*x2y2.x = col;
-		//				x2y2.y = row;*/
-		//				images[i].page_corners[2].x = col;
-		//				images[i].page_corners[2].y = row;
-		//			}
-		//			//TO DO: SECOND CONDITION FOR THIS!!
-		//			if(row > images[i].page_corners[3].y )//&& col > x3y3.x)
-		//			{ //bottom right: highest row with highest column
-		//		/*		x3y3.x = col;
-		//				x3y3.y = row;*/
-		//				images[i].page_corners[3].x = col;
-		//				images[i].page_corners[3].y = row;
-		//			}
-
-		//		}
-		//	}
-		//}
 		int current[3];
 	//top left
+		/*cout << "rows: " << test_image.rows << endl;
+		cout << "cols: " << test_image.cols << endl;
+		cout << "test function 1 " << i << " " <<  find_top_left(*images[i].back_project_image_display, images[i].page_corners[0])<< endl;*/
 		for (int row=0; row < test_image.rows; row++){
 			for (int col = 320; col < test_image.cols; col++){//choose pixel
 				if(images[i].page_corners[0].x == 0 && images[i].page_corners[0].y ==0) {
@@ -217,6 +155,8 @@ int main(int argc, const char** argv)
 				}
 			}
 		}
+		/*cout << "test function 2 " << i << " " <<  find_top_left(*images[i].back_project_image_display, images[i].page_corners[0])<< endl;
+		cout << "original loop " << i << " " << images[i].page_corners[0]<< endl << endl;*/
 			//top right
 		for (int col = test_image.cols-1; col > 0; col--){
 			for (int row=0; row < test_image.rows; row++){
@@ -261,15 +201,81 @@ int main(int argc, const char** argv)
 			}
 		}
 }
-
-
+	//pages
+	for(int i =0; i<number_of_pages ; i++){
+		Mat test_image = *page_images[i].back_project_image_display;
+		int current[3];
+	//top left
+		/*cout << "rows: " << test_image.rows << endl;
+		cout << "cols: " << test_image.cols << endl;
+		cout << "test function 1 " << i << " " <<  find_top_left(*images[i].back_project_image_display, images[i].page_corners[0])<< endl;*/
+		for (int row=0; row < test_image.rows; row++){
+			for (int col = 320; col < test_image.cols; col++){//choose pixel
+				if(page_images[i].page_corners[0].x == 0 && page_images[i].page_corners[0].y ==0) {
+					current[0] = test_image.at<Vec3b>(row,col)[0];
+					current[1] = test_image.at<Vec3b>(row,col)[1];
+					current[2] = test_image.at<Vec3b>(row,col)[2];
+					if(current[0] == 255 && current[1] == 255 && current[2] == 255){ //if white					
+						page_images[i].page_corners[0].x = col;
+						page_images[i].page_corners[0].y = row;
+					}
+				}
+			}
+		}
+		/*cout << "test function 2 " << i << " " <<  find_top_left(*images[i].back_project_image_display, images[i].page_corners[0])<< endl;
+		cout << "original loop " << i << " " << images[i].page_corners[0]<< endl << endl;*/
+			//top right
+		for (int col = test_image.cols-1; col > 0; col--){
+			for (int row=0; row < test_image.rows; row++){
+			//choose pixel
+				if(page_images[i].page_corners[1].x == 0 && page_images[i].page_corners[1].y ==0) {
+					current[0] = test_image.at<Vec3b>(row,col)[0];
+					current[1] = test_image.at<Vec3b>(row,col)[1];
+					current[2] = test_image.at<Vec3b>(row,col)[2];
+					if(current[0] == 255 && current[1] == 255 && current[2] == 255){
+						page_images[i].page_corners[1].x = col;
+						page_images[i].page_corners[1].y = row;
+					}
+				}
+			}
+		}
+		//bottom right
+		for (int row=test_image.rows-1; row >0; row--){
+			for (int col = test_image.cols-1; col > 300; col--){//choose pixel
+				if(page_images[i].page_corners[2].x == 0 && page_images[i].page_corners[2].y ==0) {
+					current[0] = test_image.at<Vec3b>(row,col)[0];
+					current[1] = test_image.at<Vec3b>(row,col)[1];
+					current[2] = test_image.at<Vec3b>(row,col)[2];		
+					if(current[0] == 255 && current[1] == 255 && current[2] == 255){
+						page_images[i].page_corners[2].x = col;
+						page_images[i].page_corners[2].y = row;
+					}
+				}
+			}
+		}
+		//bottom left
+		for (int col = 300; col < test_image.cols; col++){
+			for (int row=test_image.rows-1; row>0; row--){//choose pixel
+				if(page_images[i].page_corners[3].x == 0 && page_images[i].page_corners[3].y ==0) {
+					current[0] = test_image.at<Vec3b>(row,col)[0];
+					current[1] = test_image.at<Vec3b>(row,col)[1];
+					current[2] = test_image.at<Vec3b>(row,col)[2];
+					if(current[0] == 255 && current[1] == 255 && current[2] == 255){
+						page_images[i].page_corners[3].x = col;
+						page_images[i].page_corners[3].y = row;
+					}
+				}
+			}
+		}
+}
+#pragma endregion
 
 //PERSPECTIVE GEOMETRIC TRANSFORMATION
 
     Mat perspective_matrix( 2, 4, CV_32FC1 );
 	Mat temp_image;
 	Point2f destination_points[4];
-	Mat* perspective_warped_image = new Mat[number_of_images];
+	Mat* perspective_warped_image = new Mat[number_of_images+number_of_pages+1];
 	Mat perspective_image;
 	for (int i = 0; i<number_of_images; i++){	
 		temp_image = *images[i].original_image;
@@ -287,18 +293,11 @@ int main(int argc, const char** argv)
 		// Apply the Perspective Transform just found to the src image
 		warpPerspective(temp_image,perspective_warped_image[i],perspective_matrix,perspective_warped_image[i].size() );
 		resize(perspective_warped_image[i], perspective_warped_image[i], pages[0].size());
-	//	imshow(to_string(i), image_backproject);
-	//	imshow(to_string(i+25),perspective_warped_image);
+
 		images[i].perspective_transform_image = &perspective_warped_image[i];
-	//	imshow(to_string(i), *images[i].perspective_transform_image);
-		/*cout << i << endl;
-		cout << "point 0" << images[i].page_corners[0] << endl;
-		cout << "point 1" << images[i].page_corners[1] << endl;
-		cout << "point 2" << images[i].page_corners[2] << endl;
-		cout << "point 3" << images[i].page_corners[3] << endl << endl;*/
 	}
 
-
+#pragma region EROSION
 //EROSION
 	Mat* eroded_images = new Mat[number_of_images + number_of_pages+1];
 	for (int i = 0; i < number_of_images; i++){
@@ -312,9 +311,9 @@ int main(int argc, const char** argv)
 		cvtColor(temp_image, gray_pcb_image, CV_BGR2GRAY);
 		threshold(gray_pcb_image,binary_image,current_threshold,max_threshold,
 			THRESH_BINARY | THRESH_OTSU);
-		erode(binary_image,eroded_image,Mat());
+		erode(binary_image,eroded_images[i],Mat());
 		Mat five_by_five_element(5,5,CV_8U,Scalar(1));
-		erode(binary_image,eroded_images[i],five_by_five_element);
+		//erode(binary_image,eroded_images[i],five_by_five_element);
 		Mat original_display, eroded3_display, eroded5_display;
 		cvtColor(gray_pcb_image, original_display, CV_GRAY2BGR);
 		cvtColor(eroded_image, eroded3_display, CV_GRAY2BGR);
@@ -338,9 +337,9 @@ int main(int argc, const char** argv)
 		cvtColor(temp_image, gray_pcb_image, CV_BGR2GRAY);
 		threshold(gray_pcb_image,binary_image,current_threshold,max_threshold,
 			THRESH_BINARY | THRESH_OTSU);
-		erode(binary_image,eroded_image,Mat());
+		erode(binary_image,eroded_images[i],Mat());
 		Mat five_by_five_element(5,5,CV_8U,Scalar(1));
-		erode(binary_image,eroded_images[i],five_by_five_element);
+		//erode(binary_image,eroded_images[i],five_by_five_element);
 		Mat original_display, eroded3_display, eroded5_display;
 		cvtColor(gray_pcb_image, original_display, CV_GRAY2BGR);
 		cvtColor(eroded_image, eroded3_display, CV_GRAY2BGR);
@@ -352,29 +351,74 @@ int main(int argc, const char** argv)
 		page_images[i- number_of_images].eroded_image = &eroded_images[i];
 		//imshow(to_string(i), *page_images[i].eroded_image );
 	}
+#pragma endregion
+
+	//RESIZE PAGE IMAGE
+	for(int i = 0; i<number_of_pages; i++){
+
+		resize(*page_images[i].eroded_image,*page_images[i].eroded_image, pages[0].size());
+		//imshow(to_string(i), *page_images[i].eroded_image);
+	}
+
+	//OTSU PAGES
+	// Otsu thresholding
+	int current_threshold = 128;
+	int max_threshold = 255;
+	Mat* otsu_images = new Mat[number_of_pages];
+	for (int i=0; i< number_of_pages; i++){
+		Mat otsu_binary_image;
+		temp_image = *page_images[i].eroded_image;
+		threshold(temp_image,otsu_binary_image,current_threshold,max_threshold,
+			THRESH_BINARY | THRESH_OTSU);
+		Mat otsu_binary_image_display;
+		cvtColor(otsu_binary_image, otsu_images[i], CV_GRAY2BGR);
+		page_images[i].otsu_image = &otsu_images[i];
+		imshow("otsu", otsu_binary_image);
+		imshow("otsu display", otsu_images[i]);
+		//imshow(to_string(i), *page_images[i].otsu_image);
+	}
+
+
+
+//ADD NOISE
+	Mat* noisey_images = new Mat[number_of_pages];
+	for (int i = 0; i< number_of_pages; i++){
+		noisey_images[i] = *page_images[i].otsu_image;
+		addGaussianNoise(noisey_images[i]);
+		page_images[i].noisey_image = &noisey_images[i];
+		//imshow(to_string(i),*page_images[i].noisey_image);
+	}
+
+	imshow("Test o", *page_images[number_of_pages-1].original_image);
+	imshow("Test e", *page_images[number_of_pages-1].eroded_image);
+	imshow("Test otsu", *page_images[number_of_pages-1].otsu_image);
+	imshow("Test n", *page_images[number_of_pages-1].noisey_image);
 
 //COMPARE TO CLASSIFY
-	cout << "pages object array size " << sizeof(page_images)/sizeof(page_images[0]) << endl;
-	cout <<  "eroded images temp size " << sizeof(eroded_images)/sizeof(eroded_images[0]) << endl;
-	cout << "number of pages: " << number_of_pages << endl;
-
-	imshow("Test ", *page_images[number_of_pages-1].original_image);
-	imshow("Test ", *page_images[number_of_pages-1].eroded_image);
-	Mat* comparison = new Mat();
-	images[0].eroded_image->copySize(*comparison);
-	compare(*images[2].eroded_image, *page_images[2].eroded_image, *comparison, CMP_EQ);
-	Mat vComparison;
-	reduce(*comparison, vComparison, 0, CV_REDUCE_AVG);
-	Mat sComparison;
-	reduce(vComparison, sComparison, 1, CV_REDUCE_AVG);
-	cout << "Comparison: " << sComparison << endl;
-	imshow("image: ", *images[2].eroded_image);
-	imshow("page: ", *page_images[2].eroded_image);
-	imshow("image: ", *images[2].original_image);
-	imshow("page: ", *page_images[2].original_image);
-	/*for (int i = 0; i < number_of_pages; i++){
-		imshow(to_string(i), *page_images[i].eroded_image );
-	}*/
+	Mat* comparison = new Mat() ;
+	double most_similar_page = 0;
+	int most_like;
+	for(int j = 0; j<number_of_images; j++){
+	//int j = 0;
+		most_like = 0;
+		most_similar_page = 0;
+		for(int i = 0; i<number_of_pages; i++){
+			images[0].eroded_image->copyTo(*comparison);
+			compare(*images[j].eroded_image, *page_images[i].eroded_image, *comparison, CMP_EQ);
+			Mat vComparison;
+			reduce(*comparison, vComparison, 1, CV_REDUCE_AVG);
+			Mat sComparison;
+			reduce(vComparison, sComparison, 0, CV_REDUCE_AVG);
+			//reduce(*comparison, vComparison, 0, CV_REDUCE_AVG);
+			int greater_than;
+			if((int)sComparison.data[0] > most_like){
+				most_like = (int)sComparison.data[0];
+				most_similar_page = i+1;
+			}
+		}
+		images[j].detected_pageNum = most_similar_page;
+		cout << "choice " << j << " " <<  most_similar_page << endl;
+	}
 
 	int choice;
 	while (true)
@@ -386,3 +430,23 @@ int main(int argc, const char** argv)
 	} 
 	return 0;
 }
+
+Mat back_projection(Mat* image, Mat sample_image){
+	Mat hls_image;
+	Mat image_backproject;
+	Mat back_projection_probabilities;
+	Mat back_projection_probabilities_display;
+	image_backproject = *image;
+	cvtColor(sample_image, hls_image, CV_BGR2HLS); //convert blue sample to hls and store in hls
+	ColourHistogram histogram3D(hls_image,8);
+	histogram3D.NormaliseHistogram();
+	cvtColor(image_backproject, hls_image, CV_BGR2HLS);
+	back_projection_probabilities = histogram3D.BackProject(hls_image);
+	back_projection_probabilities = StretchImage(back_projection_probabilities);		
+	cvtColor(back_projection_probabilities, back_projection_probabilities_display, CV_GRAY2BGR);
+	/*images[i].back_project_image_display = &back_projection_probabilities_display[i];
+	Mat output1 = JoinImagesHorizontally(image_backproject,"Original Image",blue_sample,"Blue Samples",4);
+	Mat output2 = JoinImagesHorizontally(output1,"",back_projection_probabilities_display[i],"Blue Back Projection",4);*/
+	return back_projection_probabilities_display;
+}
+

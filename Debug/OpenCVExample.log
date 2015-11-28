@@ -1,19 +1,36 @@
-﻿Build started 26/11/2015 22:02:56.
+﻿Build started 28/11/2015 17:52:08.
      1>Project "C:\Vision\Assignment2\OpenCVExample.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /IC:\Vision\opencv\build /IC:\Vision\opencv\build\include\opencv /IC:\Vision\opencv\sources\modules\core\include /IC:\Vision\opencv\build\include /IC:\Vision\opencv\sources\modules\imgproc\include /IC:\Vision\opencv\sources\modules\flann\include /IC:\Vision\opencv\sources\modules\videostab\include /IC:\Vision\opencv\sources\modules\ts\include /IC:\Vision\opencv\sources\modules\stitching\include /IC:\Vision\opencv\sources\modules\calib3d\include /IC:\Vision\opencv\sources\modules\photo\include /IC:\Vision\opencv\sources\modules\objdetect\include /IC:\Vision\opencv\sources\modules\video\include /IC:\Vision\opencv\sources\modules\ml\include /IC:\Vision\opencv\sources\modules\features2d\include /IC:\Vision\opencv\sources\modules\highgui\include /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt "main (3).cpp"
          main (3).cpp
-     1>c:\vision\assignment2\main (3).cpp(214): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
-     1>c:\vision\assignment2\main (3).cpp(215): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(144): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(145): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(161): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(162): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(175): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(176): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(189): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(190): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(211): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(212): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(228): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
      1>c:\vision\assignment2\main (3).cpp(229): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
-     1>c:\vision\assignment2\main (3).cpp(230): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(242): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
      1>c:\vision\assignment2\main (3).cpp(243): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
-     1>c:\vision\assignment2\main (3).cpp(244): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(256): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
      1>c:\vision\assignment2\main (3).cpp(257): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
-     1>c:\vision\assignment2\main (3).cpp(258): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(276): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(277): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
      1>c:\vision\assignment2\main (3).cpp(278): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>c:\vision\assignment2\main (3).cpp(279): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>c:\vision\assignment2\main (3).cpp(280): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(419): warning C4101: 'greater_than' : unreferenced local variable
+     1>c:\vision\assignment2\main (3).cpp(472): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(473): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(493): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(494): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(513): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(514): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(533): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\vision\assignment2\main (3).cpp(534): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Vision\Assignment2\Debug\OpenCVExample.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\Vision\opencv\build\x86\vc11\staticlib opencv_calib3d300d.lib opencv_core300d.lib opencv_features2d300d.lib opencv_flann300d.lib opencv_hal300d.lib opencv_highgui300d.lib opencv_imgcodecs300d.lib opencv_imgproc300d.lib opencv_ml300d.lib opencv_objdetect300d.lib opencv_photo300d.lib opencv_shape300d.lib opencv_stitching300d.lib opencv_superres300d.lib opencv_ts300d.lib opencv_video300d.lib opencv_videoio300d.lib opencv_videostab300d.lib libtiffd.lib libpngd.lib libjpegd.lib libjasperd.lib IlmImfd.lib libwebpd.lib ippicvmt.lib zlibd.lib comctl32.lib vfw32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Vision\Assignment2\Debug\OpenCVExample.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Vision\Assignment2\Debug\OpenCVExample.lib" /MACHINE:X86 Debug\Binary.obj
          Debug\Edges.obj
@@ -30,4 +47,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:06.52
+Time Elapsed 00:00:02.69
