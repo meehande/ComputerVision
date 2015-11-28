@@ -13,7 +13,8 @@ public:
 	Mat* eroded_image;
 	Mat* noisey_image;
 	Mat* otsu_image;
-	
+	int ground_truth_pageNum;
+	int detected_pageNum;
 
 	SampleImage();
 	//~SampleImage();

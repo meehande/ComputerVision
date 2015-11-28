@@ -9,10 +9,12 @@
 using namespace std;
  
 Mat back_projection(Mat* image, Mat sample_image);
-Point2f find_top_left(Mat test_image, Point2f initial_xy);
-Point2f find_top_right(Mat test_image, Point2f initial_xy);
-Point2f find_bottom_right(Mat test_image, Point2f initial_xy);
-Point2f find_bottom_left(Mat test_image, Point2f initial_xy);
+double recall(double TP, double FN);
+double precision(double TP, double FP);
+double accuracy(double TP, double TN, double nSamples);
+double specificity(double TN, double FP);
+double f1(double TP, double FP, double FN);
+
 
 #define SCENE_IMAGES_INDEX  0
 #define PAGE_IMAGES_INDEX  50
@@ -66,7 +68,7 @@ int main(int argc, const char** argv)
 		"Page12.jpg",
 		"Page13.jpg"
 	};
-	char* back_project_sample_file = "BlueBookPixels.png";
+	char* back_project_sample_file = "BlueBoxes.png";
 
 	
 
@@ -279,14 +281,12 @@ int main(int argc, const char** argv)
 	Mat perspective_image;
 	for (int i = 0; i<number_of_images; i++){	
 		temp_image = *images[i].original_image;
-		perspective_matrix = Mat::zeros( temp_image.rows, temp_image.cols, temp_image.type() );	
-		destination_points[0] = Point2f( 0,0 );
-		destination_points[1] = Point2f(  temp_image.cols-1,0);
-		destination_points[2] = Point2f(  temp_image.cols-1, temp_image.rows-1);
-		destination_points[3] = Point2f( 0, temp_image.rows-1  );
-	
-		//Input and Output Image;
-		
+		perspective_matrix = Mat::zeros(temp_image.rows, temp_image.cols, temp_image.type() );	
+		destination_points[0] = Point2f(0,0 );
+		destination_points[1] = Point2f(temp_image.cols-1,0);
+		destination_points[2] = Point2f(temp_image.cols-1, temp_image.rows-1);
+		destination_points[3] = Point2f(0, temp_image.rows-1  );	
+		//Input and Output Image;	
 		Point2f source_points[] = {images[i].page_corners[0], images[i].page_corners[1], images[i].page_corners[2], images[i].page_corners[3]};
 		// Get the Perspective Transform Matrix 
 		perspective_matrix = getPerspectiveTransform( source_points, destination_points);
@@ -355,7 +355,6 @@ int main(int argc, const char** argv)
 
 	//RESIZE PAGE IMAGE
 	for(int i = 0; i<number_of_pages; i++){
-
 		resize(*page_images[i].eroded_image,*page_images[i].eroded_image, pages[0].size());
 		//imshow(to_string(i), *page_images[i].eroded_image);
 	}
@@ -373,12 +372,10 @@ int main(int argc, const char** argv)
 		Mat otsu_binary_image_display;
 		cvtColor(otsu_binary_image, otsu_images[i], CV_GRAY2BGR);
 		page_images[i].otsu_image = &otsu_images[i];
-		imshow("otsu", otsu_binary_image);
-		imshow("otsu display", otsu_images[i]);
+		//imshow("otsu", otsu_binary_image);
+		//imshow("otsu display", otsu_images[i]);
 		//imshow(to_string(i), *page_images[i].otsu_image);
 	}
-
-
 
 //ADD NOISE
 	Mat* noisey_images = new Mat[number_of_pages];
@@ -388,11 +385,6 @@ int main(int argc, const char** argv)
 		page_images[i].noisey_image = &noisey_images[i];
 		//imshow(to_string(i),*page_images[i].noisey_image);
 	}
-
-	imshow("Test o", *page_images[number_of_pages-1].original_image);
-	imshow("Test e", *page_images[number_of_pages-1].eroded_image);
-	imshow("Test otsu", *page_images[number_of_pages-1].otsu_image);
-	imshow("Test n", *page_images[number_of_pages-1].noisey_image);
 
 //COMPARE TO CLASSIFY
 	Mat* comparison = new Mat() ;
@@ -417,9 +409,28 @@ int main(int argc, const char** argv)
 			}
 		}
 		images[j].detected_pageNum = most_similar_page;
-		cout << "choice " << j << " " <<  most_similar_page << endl;
+		//cout << "choice " << j << " " <<  most_similar_page << endl;
 	}
 
+	//True Positive =a page is visible and recognised correctly
+	//False Positive = an incorrectly recognised page, where EITHER no page  was visible OR a different page was visible
+	//True Negative = no page visible and no page identified
+	//False Negative = a page is visible but no page was found
+	double TP=0,FP=0,TN=0,FN=0;
+	for (int i = 0; i<number_of_images; i++){
+		if(images[i].ground_truth_pageNum == images[i].detected_pageNum)
+			TP++;
+		else
+			FP++;
+	}
+	cout << "TP: " << TP << endl;
+	cout << "FP: " << FP << endl;
+	cout << "Precision: " << precision(TP, FP) << endl ;
+	cout << "Recall: " << recall(TP,FN) << endl;
+	cout << "Specificity: " << specificity(TN,FP) << endl;
+	cout << "Accuracy: " << accuracy(TP,TN,number_of_images) << endl;
+	cout << "F1: " << f1(TP,FP,FN) << endl;
+	
 	int choice;
 	while (true)
 	{
@@ -450,3 +461,26 @@ Mat back_projection(Mat* image, Mat sample_image){
 	return back_projection_probabilities_display;
 }
 
+/*
+* Recall = TP/(TP+FN)
+* Precision = TP/(TP+FP)
+* Accuracy = (TP +TN)/(Total Samples)
+* Specificity = TN/(FP+TN)
+* Fβ = (1+β2)* [(Precision*Recall)] / [( β2*Precision)+Recall]
+*/
+
+double recall(double TP, double FN){
+	return TP/(TP + FN) *100;
+}
+double precision(double TP, double FP){
+	return TP/(TP + FP) *100;
+}
+double accuracy(double TP, double TN, double nSamples){
+	return (TP + TN)/nSamples *100;
+}
+double specificity(double TN, double FP){
+	return TN/(FP + TN) *100;
+}
+double f1(double TP, double FP, double FN){
+	return ( 2*precision(TP,FP)*recall(TP,FN) ) / (precision(TP,FP) + recall(TP,FN)) ;
+}
