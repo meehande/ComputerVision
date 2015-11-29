@@ -8,11 +8,11 @@ SampleImage::SampleImage(){
 
 }
 
-Mat* SampleImage::backProject(Mat* image){
-	return NULL;
-}
+SampleImage::~SampleImage(){
+	delete original_image;
+	delete back_project_image_display;
+	delete perspective_transform_image;
+	delete eroded_image;
+	delete otsu_image;
 
-
-Mat* SampleImage::geometricTransform(Mat* image){
-	return NULL;
 }

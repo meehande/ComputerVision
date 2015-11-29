@@ -17,14 +17,7 @@
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Binary.cpp" />
-    <ClCompile Include="Edges.cpp" />
-    <ClCompile Include="Features.cpp" />
-    <ClCompile Include="Geometric.cpp" />
-    <ClCompile Include="Histograms.cpp" />
-    <ClCompile Include="Images.cpp" />
     <ClCompile Include="main (3).cpp" />
-    <ClCompile Include="Recognition.cpp" />
     <ClCompile Include="SampleImage.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>

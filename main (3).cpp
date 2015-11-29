@@ -20,7 +20,7 @@ double f1(double TP, double FP, double FN);
 #define PAGE_IMAGES_INDEX  50
 int main(int argc, const char** argv)
 {
-
+//LOADING SAMPLEIMAGE ARRAYS
 #pragma region INIT
 
 	int ground_truth_pageNums[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,2,3,5,4,7,9,8,7,11,13,12,2};
@@ -74,7 +74,7 @@ int main(int argc, const char** argv)
 
 	// Load images to test 
 	int number_of_images = sizeof(image_files)/sizeof(image_files[0]);
-	cout << "N " << number_of_images << endl;
+	//cout << "N " << number_of_images << endl;
 	SampleImage* images = new SampleImage[number_of_images];
 	Mat* image = new Mat[number_of_images];
 	for (int file_no=0; (file_no < number_of_images); file_no++)
@@ -91,7 +91,7 @@ int main(int argc, const char** argv)
 			return -1;
 		}
 	}
-	//imshow(to_string(0), *images[0].original_image);
+
 	// Load pages to recognise against
 	int number_of_pages = sizeof(page_files)/sizeof(page_files[0]);
 	Mat* pages = new Mat[number_of_pages];
@@ -122,28 +122,40 @@ int main(int argc, const char** argv)
 
 #pragma endregion
 
-	//BACK PROJECTION (TAKEN FROM HISTOGRAMSDEMO FUNCTION)
+//BACK PROJECTION (TAKEN FROM HISTOGRAMSDEMO FUNCTION)
 	Mat* back_projection_probabilities_display = new Mat[number_of_images + number_of_pages + 1];
 	for(int i = 0; i < number_of_images ; i ++){
 		back_projection_probabilities_display[i] = back_projection(images[i].original_image, blue_sample);
 		images[i].back_project_image_display = &back_projection_probabilities_display[i];
 		//imshow(to_string(i), *images[i].back_project_image_display);
 	}
-	for(int i = number_of_images; i < (number_of_images + number_of_pages); i++){
-		back_projection_probabilities_display[i] = back_projection(page_images[i-number_of_images].original_image, blue_sample);
-		page_images[i-number_of_images].back_project_image_display = &back_projection_probabilities_display[i];
-		//imshow(to_string(i), *page_images[i-number_of_images].back_project_image_display);
+
+//OTSU THRESHOLDING IMAGES
+	int current_threshold = 128;
+	int max_threshold = 255;
+	Mat temp_image;
+	Mat* otsu_images = new Mat[number_of_images];
+	for (int i=0; i< number_of_images; i++){
+		Mat otsu_binary_image;
+		temp_image = *images[i].back_project_image_display;
+		cvtColor(temp_image,temp_image, CV_BGR2GRAY);
+		threshold(temp_image,otsu_binary_image,current_threshold,max_threshold,
+			THRESH_BINARY | THRESH_OTSU);
+		Mat otsu_binary_image_display;
+		cvtColor(otsu_binary_image, otsu_images[i], CV_GRAY2BGR);
+		images[i].otsu_image = &otsu_images[i];
+		//imshow("otsu", otsu_binary_image);
+		//imshow("otsu display", otsu_images[i]);
+		//imshow(to_string(i), *images[i].otsu_image);
 	}
 	
 //FINDING CORNER POINTS FOR GEOMETRIC TRANSFORMATION
 #pragma region CORNER_POINTS
 	for(int i =0; i<number_of_images ; i++){
-		Mat test_image = *images[i].back_project_image_display;
+		Mat test_image = *images[i].otsu_image;
 		int current[3];
-	//top left
-		/*cout << "rows: " << test_image.rows << endl;
-		cout << "cols: " << test_image.cols << endl;
-		cout << "test function 1 " << i << " " <<  find_top_left(*images[i].back_project_image_display, images[i].page_corners[0])<< endl;*/
+	//top left 
+		//search row-by-row from (0,0) - first white pixel found
 		for (int row=0; row < test_image.rows; row++){
 			for (int col = 320; col < test_image.cols; col++){//choose pixel
 				if(images[i].page_corners[0].x == 0 && images[i].page_corners[0].y ==0) {
@@ -157,9 +169,8 @@ int main(int argc, const char** argv)
 				}
 			}
 		}
-		/*cout << "test function 2 " << i << " " <<  find_top_left(*images[i].back_project_image_display, images[i].page_corners[0])<< endl;
-		cout << "original loop " << i << " " << images[i].page_corners[0]<< endl << endl;*/
-			//top right
+		//top right
+		//search column-by-column from (0,0) - first pixel found
 		for (int col = test_image.cols-1; col > 0; col--){
 			for (int row=0; row < test_image.rows; row++){
 			//choose pixel
@@ -175,6 +186,7 @@ int main(int argc, const char** argv)
 			}
 		}
 		//bottom right
+		//search row-by-row from (max_col, max_row) - first pixel found
 		for (int row=test_image.rows-1; row >0; row--){
 			for (int col = test_image.cols-1; col > 300; col--){//choose pixel
 				if(images[i].page_corners[2].x == 0 && images[i].page_corners[2].y ==0) {
@@ -189,6 +201,7 @@ int main(int argc, const char** argv)
 			}
 		}
 		//bottom left
+		//search column-by-column from (0,max_row) - first pixel found
 		for (int col = 300; col < test_image.cols; col++){
 			for (int row=test_image.rows-1; row>0; row--){//choose pixel
 				if(images[i].page_corners[3].x == 0 && images[i].page_corners[3].y ==0) {
@@ -202,106 +215,34 @@ int main(int argc, const char** argv)
 				}
 			}
 		}
-}
-	//pages
-	for(int i =0; i<number_of_pages ; i++){
-		Mat test_image = *page_images[i].back_project_image_display;
-		int current[3];
-	//top left
-		/*cout << "rows: " << test_image.rows << endl;
-		cout << "cols: " << test_image.cols << endl;
-		cout << "test function 1 " << i << " " <<  find_top_left(*images[i].back_project_image_display, images[i].page_corners[0])<< endl;*/
-		for (int row=0; row < test_image.rows; row++){
-			for (int col = 320; col < test_image.cols; col++){//choose pixel
-				if(page_images[i].page_corners[0].x == 0 && page_images[i].page_corners[0].y ==0) {
-					current[0] = test_image.at<Vec3b>(row,col)[0];
-					current[1] = test_image.at<Vec3b>(row,col)[1];
-					current[2] = test_image.at<Vec3b>(row,col)[2];
-					if(current[0] == 255 && current[1] == 255 && current[2] == 255){ //if white					
-						page_images[i].page_corners[0].x = col;
-						page_images[i].page_corners[0].y = row;
-					}
-				}
-			}
-		}
-		/*cout << "test function 2 " << i << " " <<  find_top_left(*images[i].back_project_image_display, images[i].page_corners[0])<< endl;
-		cout << "original loop " << i << " " << images[i].page_corners[0]<< endl << endl;*/
-			//top right
-		for (int col = test_image.cols-1; col > 0; col--){
-			for (int row=0; row < test_image.rows; row++){
-			//choose pixel
-				if(page_images[i].page_corners[1].x == 0 && page_images[i].page_corners[1].y ==0) {
-					current[0] = test_image.at<Vec3b>(row,col)[0];
-					current[1] = test_image.at<Vec3b>(row,col)[1];
-					current[2] = test_image.at<Vec3b>(row,col)[2];
-					if(current[0] == 255 && current[1] == 255 && current[2] == 255){
-						page_images[i].page_corners[1].x = col;
-						page_images[i].page_corners[1].y = row;
-					}
-				}
-			}
-		}
-		//bottom right
-		for (int row=test_image.rows-1; row >0; row--){
-			for (int col = test_image.cols-1; col > 300; col--){//choose pixel
-				if(page_images[i].page_corners[2].x == 0 && page_images[i].page_corners[2].y ==0) {
-					current[0] = test_image.at<Vec3b>(row,col)[0];
-					current[1] = test_image.at<Vec3b>(row,col)[1];
-					current[2] = test_image.at<Vec3b>(row,col)[2];		
-					if(current[0] == 255 && current[1] == 255 && current[2] == 255){
-						page_images[i].page_corners[2].x = col;
-						page_images[i].page_corners[2].y = row;
-					}
-				}
-			}
-		}
-		//bottom left
-		for (int col = 300; col < test_image.cols; col++){
-			for (int row=test_image.rows-1; row>0; row--){//choose pixel
-				if(page_images[i].page_corners[3].x == 0 && page_images[i].page_corners[3].y ==0) {
-					current[0] = test_image.at<Vec3b>(row,col)[0];
-					current[1] = test_image.at<Vec3b>(row,col)[1];
-					current[2] = test_image.at<Vec3b>(row,col)[2];
-					if(current[0] == 255 && current[1] == 255 && current[2] == 255){
-						page_images[i].page_corners[3].x = col;
-						page_images[i].page_corners[3].y = row;
-					}
-				}
-			}
-		}
-}
+	}
+	
 #pragma endregion
 
 //PERSPECTIVE GEOMETRIC TRANSFORMATION
-
     Mat perspective_matrix( 2, 4, CV_32FC1 );
-	Mat temp_image;
 	Point2f destination_points[4];
 	Mat* perspective_warped_image = new Mat[number_of_images+number_of_pages+1];
-	Mat perspective_image;
 	for (int i = 0; i<number_of_images; i++){	
 		temp_image = *images[i].original_image;
 		perspective_matrix = Mat::zeros(temp_image.rows, temp_image.cols, temp_image.type() );	
-		destination_points[0] = Point2f(0,0 );
+		destination_points[0] = Point2f(0,0);
 		destination_points[1] = Point2f(temp_image.cols-1,0);
 		destination_points[2] = Point2f(temp_image.cols-1, temp_image.rows-1);
-		destination_points[3] = Point2f(0, temp_image.rows-1  );	
-		//Input and Output Image;	
+		destination_points[3] = Point2f(0, temp_image.rows-1);	
 		Point2f source_points[] = {images[i].page_corners[0], images[i].page_corners[1], images[i].page_corners[2], images[i].page_corners[3]};
 		// Get the Perspective Transform Matrix 
 		perspective_matrix = getPerspectiveTransform( source_points, destination_points);
 		// Apply the Perspective Transform just found to the src image
 		warpPerspective(temp_image,perspective_warped_image[i],perspective_matrix,perspective_warped_image[i].size() );
 		resize(perspective_warped_image[i], perspective_warped_image[i], pages[0].size());
-
 		images[i].perspective_transform_image = &perspective_warped_image[i];
 	}
 
 #pragma region EROSION
-//EROSION
+//ERODE IMAGES
 	Mat* eroded_images = new Mat[number_of_images + number_of_pages+1];
 	for (int i = 0; i < number_of_images; i++){
-		Mat eroded_image, eroded5_image;
 		temp_image = *images[i].perspective_transform_image;
 		Mat binary_image;
 		int current_threshold = 128;
@@ -311,23 +252,13 @@ int main(int argc, const char** argv)
 		cvtColor(temp_image, gray_pcb_image, CV_BGR2GRAY);
 		threshold(gray_pcb_image,binary_image,current_threshold,max_threshold,
 			THRESH_BINARY | THRESH_OTSU);
-		erode(binary_image,eroded_images[i],Mat());
-		Mat five_by_five_element(5,5,CV_8U,Scalar(1));
-		//erode(binary_image,eroded_images[i],five_by_five_element);
-		Mat original_display, eroded3_display, eroded5_display;
-		cvtColor(gray_pcb_image, original_display, CV_GRAY2BGR);
-		cvtColor(eroded_image, eroded3_display, CV_GRAY2BGR);
-		cvtColor(eroded_images[i], eroded5_display, CV_GRAY2BGR);
-		//Mat output1 = JoinImagesHorizontally( original_display, "Original Image", eroded3_display, "Eroded Image (3x3)", 4 );
-		//Mat output2 = JoinImagesHorizontally( output1, "", eroded_images[i], "Eroded Image (5x5)", 4 );
-		//Mat output3 = JoinImagesHorizontally( otsu_display, "Otsu Thresholded Image", dilated3_display, "Dilated Image (3x3)", 4 );
-		//imshow("Erosion... ", output2);
+		Mat ten_by_ten_element(10,10,CV_8U,Scalar(1));
+		erode(binary_image,eroded_images[i],ten_by_ten_element);
 		images[i].eroded_image = &eroded_images[i];
 		//imshow(to_string(i), *images[i].eroded_image );
 	}
-	//ERODE TEMPLATE IMAGES
+//ERODE PAGES
 	for (int i = number_of_images; i < (number_of_images+number_of_pages ); i++){
-		Mat eroded_image, eroded5_image;
  		temp_image = *page_images[i - number_of_images].original_image;
 		Mat binary_image;
 		int current_threshold = 128;
@@ -337,64 +268,27 @@ int main(int argc, const char** argv)
 		cvtColor(temp_image, gray_pcb_image, CV_BGR2GRAY);
 		threshold(gray_pcb_image,binary_image,current_threshold,max_threshold,
 			THRESH_BINARY | THRESH_OTSU);
-		erode(binary_image,eroded_images[i],Mat());
-		Mat five_by_five_element(5,5,CV_8U,Scalar(1));
-		//erode(binary_image,eroded_images[i],five_by_five_element);
-		Mat original_display, eroded3_display, eroded5_display;
-		cvtColor(gray_pcb_image, original_display, CV_GRAY2BGR);
-		cvtColor(eroded_image, eroded3_display, CV_GRAY2BGR);
-		cvtColor(eroded_images[i], eroded5_display, CV_GRAY2BGR);
-		Mat output1 = JoinImagesHorizontally( original_display, "Original Image", eroded3_display, "Eroded Image (3x3)", 4 );
-		Mat output2 = JoinImagesHorizontally( output1, "", eroded_images[i], "Eroded Image (5x5)", 4 );
-		//Mat output3 = JoinImagesHorizontally( otsu_display, "Otsu Thresholded Image", dilated3_display, "Dilated Image (3x3)", 4 );
-		//imshow("Erosion... ", output2);
+		Mat ten_by_ten_element(10,10,CV_8U,Scalar(1));
+		erode(binary_image,eroded_images[i],ten_by_ten_element);
 		page_images[i- number_of_images].eroded_image = &eroded_images[i];
 		//imshow(to_string(i), *page_images[i].eroded_image );
 	}
 #pragma endregion
 
-	//RESIZE PAGE IMAGE
+//RESIZE PAGE IMAGE
 	for(int i = 0; i<number_of_pages; i++){
 		resize(*page_images[i].eroded_image,*page_images[i].eroded_image, pages[0].size());
 		//imshow(to_string(i), *page_images[i].eroded_image);
 	}
 
-	//OTSU PAGES
-	// Otsu thresholding
-	int current_threshold = 128;
-	int max_threshold = 255;
-	Mat* otsu_images = new Mat[number_of_pages];
-	for (int i=0; i< number_of_pages; i++){
-		Mat otsu_binary_image;
-		temp_image = *page_images[i].eroded_image;
-		threshold(temp_image,otsu_binary_image,current_threshold,max_threshold,
-			THRESH_BINARY | THRESH_OTSU);
-		Mat otsu_binary_image_display;
-		cvtColor(otsu_binary_image, otsu_images[i], CV_GRAY2BGR);
-		page_images[i].otsu_image = &otsu_images[i];
-		//imshow("otsu", otsu_binary_image);
-		//imshow("otsu display", otsu_images[i]);
-		//imshow(to_string(i), *page_images[i].otsu_image);
-	}
-
-//ADD NOISE
-	Mat* noisey_images = new Mat[number_of_pages];
-	for (int i = 0; i< number_of_pages; i++){
-		noisey_images[i] = *page_images[i].otsu_image;
-		addGaussianNoise(noisey_images[i]);
-		page_images[i].noisey_image = &noisey_images[i];
-		//imshow(to_string(i),*page_images[i].noisey_image);
-	}
-
 //COMPARE TO CLASSIFY
 	Mat* comparison = new Mat() ;
 	double most_similar_page = 0;
-	int most_like;
-	for(int j = 0; j<number_of_images; j++){
-	//int j = 0;
+	int most_like;//keep track of current max similarity 
+	for(int j = 0; j<number_of_images; j++){ //pick image
 		most_like = 0;
 		most_similar_page = 0;
-		for(int i = 0; i<number_of_pages; i++){
+		for(int i = 0; i<number_of_pages; i++){ //compare image to every page
 			images[0].eroded_image->copyTo(*comparison);
 			compare(*images[j].eroded_image, *page_images[i].eroded_image, *comparison, CMP_EQ);
 			Mat vComparison;
@@ -420,16 +314,19 @@ int main(int argc, const char** argv)
 	for (int i = 0; i<number_of_images; i++){
 		if(images[i].ground_truth_pageNum == images[i].detected_pageNum)
 			TP++;
-		else
+		else{
 			FP++;
+			cout << "FP: " << i << endl;
+		}
 	}
-	cout << "TP: " << TP << endl;
-	cout << "FP: " << FP << endl;
-	cout << "Precision: " << precision(TP, FP) << endl ;
+	cout << "Correct: " << TP  << "/25\n" << endl;
+	cout << "Incorrect: " << FP << "/25\n" << endl;
+	cout << "Precision: " << precision(TP, FP) << endl;
 	cout << "Recall: " << recall(TP,FN) << endl;
 	cout << "Specificity: " << specificity(TN,FP) << endl;
-	cout << "Accuracy: " << accuracy(TP,TN,number_of_images) << endl;
+	cout << "Accuracy: " << accuracy(TP,TN,number_of_images) <<endl;
 	cout << "F1: " << f1(TP,FP,FN) << endl;
+
 	
 	int choice;
 	while (true)
@@ -455,9 +352,6 @@ Mat back_projection(Mat* image, Mat sample_image){
 	back_projection_probabilities = histogram3D.BackProject(hls_image);
 	back_projection_probabilities = StretchImage(back_projection_probabilities);		
 	cvtColor(back_projection_probabilities, back_projection_probabilities_display, CV_GRAY2BGR);
-	/*images[i].back_project_image_display = &back_projection_probabilities_display[i];
-	Mat output1 = JoinImagesHorizontally(image_backproject,"Original Image",blue_sample,"Blue Samples",4);
-	Mat output2 = JoinImagesHorizontally(output1,"",back_projection_probabilities_display[i],"Blue Back Projection",4);*/
 	return back_projection_probabilities_display;
 }
 
